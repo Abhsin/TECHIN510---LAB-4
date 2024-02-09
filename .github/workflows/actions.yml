@@ -1,6 +1,8 @@
 name: run main.py
 
 on:
+  workflow_dispatch: # Manually run the workflow
+
   schedule:
     - cron: '*/30 * * * *' # At every 30mins
 
