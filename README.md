@@ -1,8 +1,9 @@
 # TECHIN510---LAB-4
 In Class work and Lab 4 Homework 
 
-
 ## Overview 
+Created a World Clock with Streamlit - select upto 4 clocks to show time!
+
 
 ## Installation
 
@@ -17,6 +18,5 @@ streamlit run app.py
 ```
 
 ## Lessions Learned
-
 
 ## Questions

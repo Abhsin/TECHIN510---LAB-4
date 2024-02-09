@@ -4,11 +4,45 @@ import pytz
 import time
 import requests
 
+def get_location_coordinates(location):
+    try:
+        url = f"https://nominatim.openstreetmap.org/search.php?q={location}&format=json"
+        response = requests.get(url)
+        if response.status_code == 200:
+            data = response.json()
+            if data:
+                lat = data[0]['lat']
+                lon = data[0]['lon']
+                return lat, lon
+            else:
+                return None, None
+        else:
+            return None, None
+    except Exception as e:
+        print(f"Error fetching coordinates for location {location}. Error: {e}")
+        return None, None
+
+def get_latest_weather_forecast(lat, lon):
+    try:
+        url_weather = f"https://api.weather.gov/points/{lat},{lon}"
+        response = requests.get(url_weather)
+        if response.status_code == 200:
+            forecast_url = response.json()['properties']['forecast']
+            forecast_response = requests.get(forecast_url)
+            if forecast_response.status_code == 200:
+                forecast_data = forecast_response.json()['properties']['periods'][0] # Get the latest forecast
+                return forecast_data['shortForecast'], forecast_data['temperature'], forecast_data['windSpeed'], forecast_data['windDirection']
+        return 'Not available', 'Not available', 'Not available', 'Not available'
+    except Exception as e:
+        print(f"Error fetching latest weather data for lat: {lat}, lon: {lon}. Error: {e}")
+        return 'Not available', 'Not available', 'Not available', 'Not available'
+
 def page_config():
     st.set_page_config(
         page_title="World Clock & Converter",
         page_icon="🌍",
         initial_sidebar_state="expanded",
+        layout="wide"
     )
 
 def get_time_in_timezone(timezone):
@@ -54,14 +88,10 @@ def world_clock():
     # Weather display
     st.sidebar.title("Real-time Weather")
     city = st.sidebar.text_input("Enter City:", "New York")
-    weather_api_key = "YOUR_WEATHER_API_KEY"
-    weather_url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={weather_api_key}&units=metric"
-    response = requests.get(weather_url)
-    if response.status_code == 200:
-        weather_data = response.json()
-        temperature = weather_data['main']['temp']
-        description = weather_data['weather'][0]['description']
-        st.sidebar.write(f"Weather in {city}: {description}, Temperature: {temperature}°C")
+    lat, lon = get_location_coordinates(city)
+    if lat is not None and lon is not None:
+        short_forecast, temperature, wind_speed, wind_direction = get_latest_weather_forecast(lat, lon)
+        st.sidebar.write(f"Weather in {city}: {short_forecast}, Temperature: {temperature}°F, Wind Speed: {wind_speed}, Wind Direction: {wind_direction}")
     else:
         st.sidebar.write("Failed to fetch weather data")
 

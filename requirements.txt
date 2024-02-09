@@ -1,2 +1,5 @@
 streamlit
-geopy
+datetime
+pytz
+time
+requests
